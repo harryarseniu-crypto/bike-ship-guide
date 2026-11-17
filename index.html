@@ -340,21 +340,42 @@
   .faq-list .faq-a b { color: var(--fg); font-weight: 600; }
   .faq-list .faq-a a { color: var(--accent); font-weight: 600; }
 
-  /* Step-by-step reveal */
-  .card.locked > table, .card.locked > .ready-body, .card .card-foot { display: none; }
-  .card.active > .card-foot { display: block; }
-  .card.locked { opacity: .5; }
-  .card.locked .card-head .num { background: var(--off); }
-  .card.active { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft), var(--shadow); }
-  .card-foot { padding: 0 16px 16px; }
-  .step-next {
-    font-family: var(--font); font-weight: 700; font-size: .92rem;
-    color: #fff; background: var(--accent);
-    border: none; border-radius: 9px; padding: 11px 18px;
-    cursor: pointer;
+  /* Two-path columns */
+  .paths { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+  @media (max-width: 640px) { .paths { grid-template-columns: 1fr; } }
+  .path-col { display: flex; flex-direction: column; gap: 10px; transition: opacity .2s; }
+  .path-col.greyed { opacity: .4; }
+  .path-col.greyed .pstep { pointer-events: none; }
+  .path-head {
+    display: flex; align-items: center; gap: 11px;
+    width: 100%; text-align: left; cursor: pointer;
+    background: var(--surface); border: 1.5px solid var(--line);
+    border-radius: 11px; padding: 14px 16px;
+    font-family: var(--display); font-weight: 700; font-size: 1.02rem; color: var(--ink);
   }
-  .step-next:hover { filter: brightness(1.06); }
-  .step-next:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .path-col.active .path-head { border-color: var(--accent); background: var(--accent-soft); }
+  .path-head .ph-dot { width: 17px; height: 17px; border-radius: 50%; border: 2px solid var(--off); flex: none; }
+  .path-col.active .path-head .ph-dot { border-color: var(--accent); background: radial-gradient(var(--accent) 42%, transparent 46%); }
+  .pstep { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+  .pstep > summary {
+    cursor: pointer; list-style: none; padding: 12px 14px;
+    font-weight: 600; font-size: .92rem; color: var(--fg);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .pstep > summary::-webkit-details-marker { display: none; }
+  .pstep > summary::after { content: "+"; margin-left: auto; color: var(--accent); font-weight: 700; }
+  .pstep[open] > summary::after { content: "–"; }
+  .pnum {
+    width: 22px; height: 22px; border-radius: 6px; flex: none;
+    display: grid; place-items: center; font-family: var(--display);
+    background: var(--ink); color: #fff; font-size: .76rem; font-weight: 700;
+  }
+  .pbody { padding: 2px 14px 14px; }
+  .pbody-t { font-size: .88rem; color: var(--muted); margin: 0 0 10px; line-height: 1.5; }
+  .pbody .field { margin-bottom: 10px; }
+  .pbody .boxrec { margin-bottom: 10px; }
+  .ebike-note { margin-bottom: 4px; }
+  .pbody .cta-secondary { margin-top: 12px; }
 </style>
 
 <div class="wrap">
@@ -382,144 +403,188 @@
       <div class="seges">
         <button class="seg" id="leadBike" aria-pressed="false">
           <span class="dot"></span>
-          <span><b>Need a box</b><small>We'll walk you to the right size box.</small></span>
+          <span><b>Need a bike box</b><small>We'll walk you to the right size box.</small></span>
         </button>
         <button class="seg" id="leadShip" aria-pressed="false">
           <span class="dot"></span>
-          <span><b>Just need shipping</b><small>I have my own box — just the label.</small></span>
+          <span><b>Just need bike shipping</b><small>I have my own box — just the label.</small></span>
         </button>
       </div>
     </div>
   </section>
 
   <div id="details" hidden>
-  <div class="tables">
-    <!-- Box sizing FIRST — only when a box is needed -->
-    <section class="card" id="cardBox" aria-label="What size box">
-      <div class="card-head">
-        <span class="num" id="boxNum">3</span>
-        <h2>What size box?</h2>
-        <span class="tag on">Box size</span>
-      </div>
-      <table>
-        <tr id="rowStyle">
-          <td class="label">Which best fits your bike?<span class="hint">Picks the right box size</span></td>
-          <td class="field sel">
-            <select id="style">
-              <option value="roadgravel" selected>Road, gravel or smaller mountain bike</option>
-              <option value="mtb">Mountain bike — keep the rear wheel on</option>
-              <option value="aero">Aero road / triathlon (integrated bars)</option>
-              <option value="fat">Fat bike</option>
-              <option value="kids">Kids or BMX bike</option>
-            </select>
-          </td>
-        </tr>
-        <tr id="rowBoxRec">
-          <td class="label">Your box</td>
-          <td class="field"><div class="boxrec" id="boxRec"></div></td>
-        </tr>
-        <tr id="rowBoxPick">
-          <td class="label">Prefer a different size?</td>
-          <td class="field sel">
-            <select id="boxSize">
-              <option value="bbs">Bike Box Small (BBS)</option>
-              <option value="bbm" selected>Bike Box Medium (BBM)</option>
-              <option value="bbl">Bike Box Large (BBL)</option>
-              <option value="bbxl">Bike Box Extra Large (BBXL)</option>
-            </select>
-          </td>
-        </tr>
-      </table>
-      <div class="card-foot"><button type="button" class="step-next">Continue</button></div>
-    </section>
+    <div class="paths">
 
-    <!-- Packing — common to both paths -->
-    <section class="card" id="cardPack" aria-label="Packing the bike">
-      <div class="card-head">
-        <span class="num" id="packNum">4</span>
-        <h2>Packing the bike</h2>
-        <span class="tag on">Packing</span>
-      </div>
-      <table>
-        <tr>
-          <td class="label">Who's packing it?<span class="hint">Every bike needs some disassembly</span></td>
-          <td class="field sel">
-            <select id="packer">
-              <option value="self" selected>I'll pack it myself</option>
-              <option value="shop">Find a shop to pack it for me</option>
-            </select>
-          </td>
-        </tr>
-        <tr id="rowPackHelp">
-          <td class="label">Packing help</td>
-          <td class="field">
-            <div class="boxrec">
-              <span class="bn">Pack it yourself</span>
-              <span class="bw">Take off the pedals, wheels, bars and seat, then pad it well. These guides show you how.</span>
-              <span class="blinks" id="packLinks"></span>
+      <!-- Column 1: Need a bike box -->
+      <div class="path-col" id="colBox">
+        <button type="button" class="path-head" data-pick="box"><span class="ph-dot"></span>Need a bike box</button>
+
+        <details class="pstep">
+          <summary><span class="pnum">1</span> Pick your box size</summary>
+          <div class="pbody">
+            <div class="field sel">
+              <select id="style">
+                <option value="roadgravel" selected>Road, gravel or smaller mountain bike</option>
+                <option value="mtb">Mountain bike — keep the rear wheel on</option>
+                <option value="aero">Aero road / triathlon (integrated bars)</option>
+                <option value="fat">Fat bike</option>
+                <option value="kids">Kids or BMX bike</option>
+              </select>
             </div>
-          </td>
-        </tr>
-        <tr id="rowShop" hidden>
-          <td class="label">Find a shop</td>
-          <td class="field">
-            <div class="boxrec">
-              <span class="bn">Let a shop pack it</span>
-              <span class="bw">A local shop or mobile mechanic can pack it now and unpack it at the other end.</span>
-              <span class="blinks"><a href="https://www.bikeflights.com/bicycleshops" target="_blank" rel="noopener">BikeFlights Bike Shop Finder ↗</a></span>
-              <span class="urls"><a href="https://www.bikeflights.com/bicycleshops" target="_blank" rel="noopener">www.bikeflights.com/bicycleshops</a></span>
+            <div class="boxrec" id="boxRec"></div>
+            <div class="field sel">
+              <select id="boxSize">
+                <option value="bbs">Bike Box Small (BBS)</option>
+                <option value="bbm" selected>Bike Box Medium (BBM)</option>
+                <option value="bbl">Bike Box Large (BBL)</option>
+                <option value="bbxl">Bike Box Extra Large (BBXL)</option>
+              </select>
             </div>
-          </td>
-        </tr>
-      </table>
-      <div class="card-foot"><button type="button" class="step-next">Continue</button></div>
-    </section>
-  </div>
+          </div>
+        </details>
 
-  <!-- Get ready — both paths -->
-  <section class="card ready" id="cardReady" aria-live="polite">
-    <div class="card-head">
-      <span class="num" id="readyNum">5</span>
-      <h2>Have this ready before you book</h2>
-      <span class="tag on">Get ready</span>
-    </div>
-    <div class="ready-body">
-      <p class="ready-intro" id="readyIntro"></p>
-      <div id="readyLists">
-        <p class="sub-h" id="ebikeHdr" hidden>E-bike must-dos</p>
-        <ol class="steps" id="ebikeSteps" hidden></ol>
-        <p class="sub-h">For the shipping form</p>
-        <ul class="checklist" id="checklist"></ul>
-        <p class="sub-h">Good to know</p>
-        <ul class="checklist" id="goodToKnow"></ul>
-        <p class="sub-h">How shipping works</p>
-        <ol class="steps how" id="howSteps"></ol>
+        <details class="pstep">
+          <summary><span class="pnum">2</span> Pack the bike</summary>
+          <div class="pbody">
+            <p class="pbody-t">Take off the pedals, wheels, bars and seat, then pad it well — or have a shop do it for you.</p>
+            <span class="blinks">
+              <a href="https://www.bikeflights.com/pack" target="_blank" rel="noopener">BikeFlights packing guides ↗</a>
+              <a id="boxVideoLink" href="https://www.bikeflights.com/pack" target="_blank" rel="noopener">▶ BikeFlights packing videos</a>
+              <a href="https://www.bikeflights.com/bicycleshops" target="_blank" rel="noopener">BikeFlights Bike Shop Finder ↗</a>
+            </span>
+            <span class="urls">
+              <a href="https://www.bikeflights.com/pack" target="_blank" rel="noopener">www.bikeflights.com/pack</a>
+              <a href="https://www.bikeflights.com/bicycleshops" target="_blank" rel="noopener">www.bikeflights.com/bicycleshops</a>
+            </span>
+          </div>
+        </details>
+
+        <details class="pstep">
+          <summary><span class="pnum">3</span> Get ready to ship</summary>
+          <div class="pbody">
+            <div class="ebike-note" hidden>
+              <p class="sub-h">E-bike must-dos</p>
+              <ol class="steps">
+                <li>Drop the battery charge below <b>30%</b> before you ship.</li>
+                <li>Power the battery off and make sure it can't switch on in transit.</li>
+                <li>Pad heavily and use the <b>Bike Box Large</b>, which is rated for e-bikes.</li>
+                <li>Remove or fully cover every Class 9 lithium-ion hazmat marking.</li>
+                <li>Ships <b>ground only, in the contiguous US</b> — over 70 lb, add a heavy-package sticker.</li>
+              </ol>
+            </div>
+            <p class="sub-h">For the shipping form</p>
+            <ul class="checklist">
+              <li>Ship-from and ship-to street addresses (no PO boxes).</li>
+              <li>Your box measured at its widest points — length, width and height, each rounded up to the next inch.</li>
+              <li>The packed weight, rounded up to the next pound.</li>
+              <li>Your bike's market value, for the declared value and optional Premium Protection.</li>
+              <li>The reason for the shipment: buy/sell/gift, warranty/return/repair, vacation/event, or move.</li>
+            </ul>
+            <p class="sub-h">Good to know</p>
+            <ul class="checklist">
+              <li>Every bike needs some disassembly — pedals, wheels, bars and seat come off, even in a box.</li>
+              <li>Loose batteries and CO₂ cartridges can't ship — an e-bike battery must stay installed in the bike.</li>
+              <li>Drop off at a UPS Store and keep the receipt, or schedule a pickup — you don't need to be home.</li>
+              <li>Premium Protection covers loss or damage up to your declared value; add it when you book.</li>
+              <li>Shipping internationally? Expect duties and taxes, and possibly a tax ID.</li>
+            </ul>
+            <p class="sub-h">How shipping works</p>
+            <ol class="steps how">
+              <li>Buy and build your box, then pack your bike.</li>
+              <li>Enter your addresses, box size and weight to get the price, then buy your label.</li>
+              <li>Schedule a pickup or drop it at a UPS Store — keep the receipt.</li>
+              <li>Track it from pickup to delivery.</li>
+            </ol>
+            <a class="cta-secondary" id="ctaBox" href="#" target="_blank" rel="noopener"></a>
+            <div class="cta-url" id="ctaBoxUrl"></div>
+          </div>
+        </details>
       </div>
-    </div>
-  </section>
 
-  <!-- Jump off when ready -->
-  <section class="cta" id="cta" hidden>
-    <a class="cta-secondary" id="ctaBox" href="#" target="_blank" rel="noopener" hidden></a>
-    <div class="cta-url" id="ctaBoxUrl" hidden></div>
-    <a class="cta-primary" href="https://www.bikeflights.com/ship" target="_blank" rel="noopener">Go to BikeFlights Shipping&nbsp;↗</a>
-    <div class="cta-url"><a href="https://www.bikeflights.com/ship" target="_blank" rel="noopener">www.bikeflights.com/ship</a></div>
-    <div class="links-row">
-      <a href="https://shop.bikeflights.com/collections/bike-boxes" target="_blank" rel="noopener">BikeFlights Boxes</a>
-      <a href="https://www.bikeflights.com/pack" target="_blank" rel="noopener">BikeFlights Packing</a>
-      <a href="https://www.bikeflights.com/bicycleshops" target="_blank" rel="noopener">BikeFlights Shop Finder</a>
-      <a href="https://www.bikeflights.com/dimensionsandrates" target="_blank" rel="noopener">BikeFlights Sizes &amp; Rates</a>
-      <a href="https://faq.bikeflights.com" target="_blank" rel="noopener">BikeFlights FAQ</a>
+      <!-- Column 2: Just need bike shipping -->
+      <div class="path-col" id="colShip">
+        <button type="button" class="path-head" data-pick="ship"><span class="ph-dot"></span>Just need bike shipping</button>
+
+        <details class="pstep">
+          <summary><span class="pnum">1</span> Pack &amp; measure your box</summary>
+          <div class="pbody">
+            <p class="pbody-t">Pack your bike in your own box, then measure it at the widest points and round each dimension up to the next inch (and the weight up to the next pound).</p>
+            <span class="blinks">
+              <a href="https://www.bikeflights.com/pack" target="_blank" rel="noopener">BikeFlights packing guides ↗</a>
+              <a href="https://www.bikeflights.com/dimensionsandrates" target="_blank" rel="noopener">BikeFlights sizes &amp; rates ↗</a>
+              <a href="https://www.bikeflights.com/bicycleshops" target="_blank" rel="noopener">BikeFlights Bike Shop Finder ↗</a>
+            </span>
+            <span class="urls">
+              <a href="https://www.bikeflights.com/pack" target="_blank" rel="noopener">www.bikeflights.com/pack</a>
+              <a href="https://www.bikeflights.com/dimensionsandrates" target="_blank" rel="noopener">www.bikeflights.com/dimensionsandrates</a>
+              <a href="https://www.bikeflights.com/bicycleshops" target="_blank" rel="noopener">www.bikeflights.com/bicycleshops</a>
+            </span>
+          </div>
+        </details>
+
+        <details class="pstep">
+          <summary><span class="pnum">2</span> Get ready to ship</summary>
+          <div class="pbody">
+            <div class="ebike-note" hidden>
+              <p class="sub-h">E-bike must-dos</p>
+              <ol class="steps">
+                <li>Drop the battery charge below <b>30%</b> before you ship.</li>
+                <li>Power the battery off and make sure it can't switch on in transit.</li>
+                <li>Pad heavily — e-bikes need a large, sturdy box rated for the extra weight.</li>
+                <li>Remove or fully cover every Class 9 lithium-ion hazmat marking.</li>
+                <li>Ships <b>ground only, in the contiguous US</b> — over 70 lb, add a heavy-package sticker.</li>
+              </ol>
+            </div>
+            <p class="sub-h">For the shipping form</p>
+            <ul class="checklist">
+              <li>Ship-from and ship-to street addresses (no PO boxes).</li>
+              <li>Your packed box measured at its widest points — length, width and height, each rounded up to the next inch.</li>
+              <li>The packed weight, rounded up to the next pound.</li>
+              <li>Your bike's market value, for the declared value and optional Premium Protection.</li>
+              <li>The reason for the shipment: buy/sell/gift, warranty/return/repair, vacation/event, or move.</li>
+            </ul>
+            <p class="sub-h">Good to know</p>
+            <ul class="checklist">
+              <li>Measure the box packed and ready — carriers audit dimensions and weight.</li>
+              <li>Loose batteries and CO₂ cartridges can't ship — an e-bike battery must stay installed in the bike.</li>
+              <li>Drop off at a UPS Store and keep the receipt, or schedule a pickup — you don't need to be home.</li>
+              <li>Premium Protection covers loss or damage up to your declared value; add it when you book.</li>
+              <li>Shipping internationally? Expect duties and taxes, and possibly a tax ID.</li>
+            </ul>
+            <p class="sub-h">How shipping works</p>
+            <ol class="steps how">
+              <li>Pack your bike in your own box.</li>
+              <li>Enter your addresses, box size and weight to get the price, then buy your label.</li>
+              <li>Schedule a pickup or drop it at a UPS Store — keep the receipt.</li>
+              <li>Track it from pickup to delivery.</li>
+            </ol>
+          </div>
+        </details>
+      </div>
+
     </div>
-    <div class="urls">
-      <a href="https://shop.bikeflights.com/collections/bike-boxes" target="_blank" rel="noopener">shop.bikeflights.com/collections/bike-boxes</a>
-      <a href="https://www.bikeflights.com/pack" target="_blank" rel="noopener">www.bikeflights.com/pack</a>
-      <a href="https://www.bikeflights.com/bicycleshops" target="_blank" rel="noopener">www.bikeflights.com/bicycleshops</a>
-      <a href="https://www.bikeflights.com/dimensionsandrates" target="_blank" rel="noopener">www.bikeflights.com/dimensionsandrates</a>
-      <a href="https://faq.bikeflights.com" target="_blank" rel="noopener">faq.bikeflights.com</a>
-    </div>
-    <p class="muted-note">A guide to get you ready — buy a box and book shipping on BikeFlights from the links above, then come back any time.</p>
-  </section>
+
+    <!-- Shared handoff -->
+    <section class="cta" id="cta">
+      <a class="cta-primary" href="https://www.bikeflights.com/ship" target="_blank" rel="noopener">Go to BikeFlights Shipping&nbsp;↗</a>
+      <div class="cta-url"><a href="https://www.bikeflights.com/ship" target="_blank" rel="noopener">www.bikeflights.com/ship</a></div>
+      <div class="links-row">
+        <a href="https://shop.bikeflights.com/collections/bike-boxes" target="_blank" rel="noopener">BikeFlights Boxes</a>
+        <a href="https://www.bikeflights.com/pack" target="_blank" rel="noopener">BikeFlights Packing</a>
+        <a href="https://www.bikeflights.com/bicycleshops" target="_blank" rel="noopener">BikeFlights Shop Finder</a>
+        <a href="https://www.bikeflights.com/dimensionsandrates" target="_blank" rel="noopener">BikeFlights Sizes &amp; Rates</a>
+        <a href="https://faq.bikeflights.com" target="_blank" rel="noopener">BikeFlights FAQ</a>
+      </div>
+      <div class="urls">
+        <a href="https://shop.bikeflights.com/collections/bike-boxes" target="_blank" rel="noopener">shop.bikeflights.com/collections/bike-boxes</a>
+        <a href="https://www.bikeflights.com/pack" target="_blank" rel="noopener">www.bikeflights.com/pack</a>
+        <a href="https://www.bikeflights.com/bicycleshops" target="_blank" rel="noopener">www.bikeflights.com/bicycleshops</a>
+        <a href="https://www.bikeflights.com/dimensionsandrates" target="_blank" rel="noopener">www.bikeflights.com/dimensionsandrates</a>
+        <a href="https://faq.bikeflights.com" target="_blank" rel="noopener">faq.bikeflights.com</a>
+      </div>
+      <p class="muted-note">A guide to get you ready — buy a box and book shipping on BikeFlights from the links above, then come back any time.</p>
+    </section>
   </div>
 
   <!-- Always-visible, crawlable answers for search and AI citation -->
@@ -572,26 +637,19 @@
 
 <script>
 (function () {
-  var mode = null; // null (unanswered) | "box" | "ship"
-  var step = 0;    // which revealed section is active
-
   function id(x) { return document.getElementById(x); }
+  var pick = null; // null | "box" | "ship"
 
   var el = {
+    contents: id("contents"), q2Wrap: id("q2Wrap"),
     leadBike: id("leadBike"), leadShip: id("leadShip"),
-    q2Wrap: id("q2Wrap"),
-    details: id("details"), cta: id("cta"), ctaBoxUrl: id("ctaBoxUrl"),
-    cardBox: id("cardBox"), rowStyle: id("rowStyle"), boxRec: id("boxRec"),
-    boxNum: id("boxNum"), packNum: id("packNum"), readyNum: id("readyNum"),
-    rowPackHelp: id("rowPackHelp"), rowShop: id("rowShop"), packLinks: id("packLinks"),
-    ctaBox: id("ctaBox"), readyLists: id("readyLists"), readyIntro: id("readyIntro"),
-    ebikeHdr: id("ebikeHdr"), ebikeSteps: id("ebikeSteps"),
-    checklist: id("checklist"), goodToKnow: id("goodToKnow"), howSteps: id("howSteps")
+    details: id("details"),
+    colBox: id("colBox"), colShip: id("colShip"),
+    style: id("style"), boxSize: id("boxSize"), boxRec: id("boxRec"),
+    boxVideoLink: id("boxVideoLink"),
+    ctaBox: id("ctaBox"), ctaBoxUrl: id("ctaBoxUrl")
   };
-  var s = {
-    contents: id("contents"),
-    style: id("style"), boxSize: id("boxSize"), packer: id("packer")
-  };
+  var s = el; // alias so the box-recommendation helpers below read el.contents / el.style / el.boxSize
 
   // Real boxes — assembled (shipping) dimensions and buy pages from the BikeFlights store.
   var SHOP = "https://shop.bikeflights.com/products/";
@@ -601,58 +659,6 @@
     bbl:  { name:"Bike Box Large (BBL)", dims:"64 × 14 × 32 in", why:"The longest box — keeps the rear wheel on for faster packing; rated for road, gravel, MTB and e-bikes.", shop:SHOP+"bikeflights-bike-box-large", video:"https://youtu.be/Me8ATk304m4", vlabel:"Pack in the Large" },
     bbxl: { name:"Bike Box Extra Large (BBXL)", dims:"56 × 21 × 32 in", why:"The widest box — fits aero road, triathlon and fat bikes without removing integrated bars.", shop:SHOP+"bikeflights-bike-box-extra-large", video:"https://youtu.be/MT8PQLMH6Ms", vlabel:"Pack in the Extra Large" }
   };
-
-  // Packing-video playlists by bike type.
-  var PLAYLIST = {
-    road:  "https://www.youtube.com/playlist?list=PL7aDHNvVDo6sN79__byCO9M9wsPEvUbfN",
-    gravel:"https://www.youtube.com/playlist?list=PL7aDHNvVDo6vNtnvEed-l_dJjN1LU5nn-",
-    mtb:   "https://www.youtube.com/playlist?list=PL7aDHNvVDo6st1TCFQJUD_LfwhkCYHHQk",
-    ebike: "https://www.youtube.com/playlist?list=PL7aDHNvVDo6vXpS02RpBGO1XAR6nZHwk8"
-  };
-
-  // E-bike prep steps (UN 3171 — single e-bike with the battery installed).
-  var EBIKE_STEPS = [
-    "Drop the battery charge below <b>30%</b> before you ship.",
-    "Power the battery off, remove any keys, and make sure it can't switch on in transit.",
-    "Pad heavily with extra-dense foam and use the <b>Bike Box Large</b>, which is rated for e-bikes.",
-    "Remove or fully cover every Class 9 lithium-ion hazmat marking (UN3091, UN3171, UN3480, UN3481, UN3556).",
-    "It ships <b>ground only, within the contiguous US</b> — no Alaska or Hawaii. Over 70 lb, add a heavy-package sticker."
-  ];
-
-  var CHECKLIST = [
-    "Ship-from and ship-to street addresses (no PO boxes).",
-    "Your packed box measured at its widest points — length, width and height, each rounded up to the next inch.",
-    "The packed weight, rounded up to the next pound.",
-    "Your bike's market value, for the declared value and optional Premium Protection.",
-    "The reason for the shipment: buy/sell/gift, warranty/return/repair, vacation/event, or move."
-  ];
-
-  var GOOD_TO_KNOW = [
-    "Every bike needs some disassembly — pedals, wheels, bars and seat come off, even in a bike box.",
-    "Loose batteries and CO₂ cartridges can't ship — an e-bike battery must stay installed in the bike.",
-    "Drop off at a UPS Store and keep the receipt, or schedule a pickup — you don't need to be home.",
-    "Premium Protection covers loss or damage up to your declared value; add it when you book.",
-    "Shipping internationally? Expect duties and taxes, and possibly a tax ID."
-  ];
-
-  function text(se) { return se.options[se.selectedIndex].text; }
-  function needBox() { return mode === "box"; }
-  function gateOpen() { return mode !== null && s.contents.value !== ""; }
-
-  // Ordered sections that reveal one at a time.
-  function seqIds() { return needBox() ? ["cardBox", "cardPack", "cardReady"] : ["cardPack", "cardReady"]; }
-  function applySteps() {
-    var seq = seqIds();
-    if (step > seq.length - 1) { step = seq.length - 1; }
-    seq.forEach(function (cid, i) {
-      var card = id(cid);
-      card.classList.remove("locked", "active");
-      if (i > step) { card.classList.add("locked"); }
-      else if (i === step) { card.classList.add("active"); }
-    });
-    el.cta.hidden = step < seq.length - 1; // links appear only on the last section
-  }
-  function list(node, items) { node.innerHTML = items.map(function (x) { return "<li>" + x + "</li>"; }).join(""); }
 
   function recommendBox() {
     var t = s.contents.value;
@@ -681,146 +687,71 @@
     if (key === "bbxl" && st === "aero") return { href:"https://youtu.be/_3or0eYL1C4", label:"Pack a tri bike in the Extra Large" };
     return { href: BOXDATA[key].video, label: BOXDATA[key].vlabel };
   }
-  function typePlaylist() {
-    var t = s.contents.value, st = s.style.value;
-    if (t === "ebike") return { href: PLAYLIST.ebike, label: "E-bike packing videos" };
-    if (st === "mtb" || st === "fat") return { href: PLAYLIST.mtb, label: "Mountain bike packing videos" };
-    if (st === "roadgravel") return { href: PLAYLIST.gravel, label: "Road & gravel packing videos" };
-    return { href: PLAYLIST.road, label: "Bike packing videos" };
+  function ebikeToggle() {
+    var isE = el.contents.value === "ebike";
+    var notes = document.querySelectorAll(".ebike-note");
+    for (var i = 0; i < notes.length; i++) { notes[i].hidden = !isE; }
   }
 
-  function setMode(next) {
-    mode = next;
-    step = 0; // restart the revealed sequence
-    el.leadBike.setAttribute("aria-pressed", String(next === "box"));
-    el.leadShip.setAttribute("aria-pressed", String(next === "ship"));
-    syncBox();
-    render();
-  }
-  function syncBox() {
-    if (needBox() && s.contents.value !== "") { s.boxSize.value = recommendBox(); }
-  }
+  function renderBox() {
+    var rec = recommendBox();
+    var b = BOXDATA[rec];
+    el.boxRec.innerHTML =
+      '<span class="bn">' + b.name + '</span>' +
+      '<span class="bd">' + b.dims + '</span>' +
+      '<span class="bw">' + recWhy(rec) + '</span>' +
+      '<span class="blinks">' +
+        '<a href="' + b.shop + '" target="_blank" rel="noopener">Buy on BikeFlights ↗</a>' +
+        '<a href="https://www.bikeflights.com/dimensionsandrates" target="_blank" rel="noopener">BikeFlights sizes &amp; rates ↗</a>' +
+      '</span>' +
+      '<span class="urls">' +
+        '<a href="' + b.shop + '" target="_blank" rel="noopener">' + b.shop.replace(/^https?:\/\//, "") + '</a>' +
+        '<a href="https://www.bikeflights.com/dimensionsandrates" target="_blank" rel="noopener">www.bikeflights.com/dimensionsandrates</a>' +
+      '</span>';
 
-  function render() {
-    var t = s.contents.value;
+    var picked = BOXDATA[el.boxSize.value];
+    el.ctaBox.href = picked.shop;
+    el.ctaBox.textContent = "Buy the " + picked.name + " on BikeFlights ↗";
+    el.ctaBoxUrl.innerHTML = '<a href="' + picked.shop + '" target="_blank" rel="noopener">' + picked.shop.replace(/^https?:\/\//, "") + '</a>';
 
-    // Step 2 (box or shipping) appears once a type is chosen.
-    el.q2Wrap.hidden = t === "";
-
-    // Nothing opens until both top questions are answered.
-    el.details.hidden = !gateOpen();
-    if (!gateOpen()) { return; }
-
-    var nb = needBox();
-
-    // Box card (box path only) + dynamic step numbering.
-    el.cardBox.hidden = !nb;
-    var n = 3;
-    if (nb) { el.boxNum.textContent = n++; }
-    el.packNum.textContent = n++;
-    el.readyNum.textContent = n;
-
-    var boxName = "your box";
-    if (nb) {
-      el.rowStyle.hidden = (t !== "standard");
-      s.style.disabled = (t !== "standard");
-      var rec = recommendBox();
-      var b = BOXDATA[rec];
-      boxName = BOXDATA[s.boxSize.value].name;
-      el.boxRec.innerHTML =
-        '<span class="bn">' + b.name + '</span>' +
-        '<span class="bd">' + b.dims + '</span>' +
-        '<span class="bw">' + recWhy(rec) + '</span>' +
-        '<span class="blinks">' +
-          '<a href="' + b.shop + '" target="_blank" rel="noopener">Buy on BikeFlights ↗</a>' +
-          '<a href="https://www.bikeflights.com/dimensionsandrates" target="_blank" rel="noopener">BikeFlights sizes &amp; rates ↗</a>' +
-        '</span>' +
-        '<span class="urls">' +
-          '<a href="' + b.shop + '" target="_blank" rel="noopener">' + b.shop.replace(/^https?:\/\//, "") + '</a>' +
-          '<a href="https://www.bikeflights.com/dimensionsandrates" target="_blank" rel="noopener">www.bikeflights.com/dimensionsandrates</a>' +
-        '</span>';
-    }
-    s.boxSize.disabled = !nb;
-
-    // Packing card.
-    var self = s.packer.value === "self";
-    el.rowPackHelp.hidden = !self;
-    el.rowShop.hidden = self;
-    if (self) {
-      var vids = nb ? boxVideo(s.boxSize.value) : typePlaylist();
-      el.packLinks.innerHTML =
-        '<a href="https://www.bikeflights.com/pack" target="_blank" rel="noopener">BikeFlights packing guides ↗</a>' +
-        '<a href="' + vids.href + '" target="_blank" rel="noopener">▶ BikeFlights: ' + vids.label + '</a>' +
-        '<span class="urls">' +
-          '<a href="https://www.bikeflights.com/pack" target="_blank" rel="noopener">www.bikeflights.com/pack</a>' +
-          '<a href="' + vids.href + '" target="_blank" rel="noopener">' + vids.href.replace(/^https?:\/\//, "") + '</a>' +
-        '</span>';
-    }
-
-    // Get-ready card.
-    var isEbike = t === "ebike";
-    el.readyLists.hidden = false;
-    el.readyIntro.className = "ready-intro";
-    el.readyIntro.textContent = nb
-      ? "You'll pack into the " + boxName + ". Here's everything to have ready so booking only takes a few minutes."
-      : "You've got your own box. Here's everything to have ready before you open the shipping form.";
-
-    el.ebikeHdr.hidden = !isEbike;
-    el.ebikeSteps.hidden = !isEbike;
-    if (isEbike) { list(el.ebikeSteps, EBIKE_STEPS); }
-
-    list(el.checklist, CHECKLIST);
-    list(el.goodToKnow, GOOD_TO_KNOW);
-
-    var step1 = !self
-      ? "Have your chosen shop pack the bike."
-      : (nb ? "Buy and build your " + boxName + ", then pack your bike (guides above)."
-            : "Pack your bike in your own box (guides above).");
-    list(el.howSteps, [
-      step1,
-      "Enter your addresses, box size and weight to get the price, then buy your label.",
-      "Schedule a pickup or drop it at a UPS Store — keep the receipt.",
-      "Track it from pickup to delivery."
-    ]);
-
-    // Box buy button (box path only).
-    if (nb) {
-      el.ctaBox.hidden = false;
-      el.ctaBox.href = BOXDATA[s.boxSize.value].shop;
-      el.ctaBox.textContent = "Buy the " + BOXDATA[s.boxSize.value].name + " on BikeFlights ↗";
-      el.ctaBoxUrl.hidden = false;
-      el.ctaBoxUrl.textContent = BOXDATA[s.boxSize.value].shop.replace(/^https?:\/\//, "");
-    } else {
-      el.ctaBox.hidden = true;
-      el.ctaBoxUrl.hidden = true;
-    }
-
-    applySteps(); // reveal one section at a time
+    var v = boxVideo(el.boxSize.value);
+    el.boxVideoLink.href = v.href;
+    el.boxVideoLink.textContent = "▶ BikeFlights: " + v.label;
   }
 
-  function advance() {
-    var seq = seqIds();
-    if (step < seq.length - 1) {
-      step++;
-      render();
-      var active = id(seqIds()[step]);
-      if (active && active.scrollIntoView) { active.scrollIntoView({ behavior: "smooth", block: "nearest" }); }
-    }
+  function syncBox() { el.boxSize.value = recommendBox(); }
+
+  function setPick(p) {
+    pick = p;
+    el.leadBike.setAttribute("aria-pressed", String(p === "box"));
+    el.leadShip.setAttribute("aria-pressed", String(p === "ship"));
+    el.colBox.classList.toggle("active", p === "box");
+    el.colBox.classList.toggle("greyed", p === "ship");
+    el.colShip.classList.toggle("active", p === "ship");
+    el.colShip.classList.toggle("greyed", p === "box");
+    var col = p === "box" ? el.colBox : (p === "ship" ? el.colShip : null);
+    if (col) { var first = col.querySelector(".pstep"); if (first) { first.open = true; } }
   }
 
-  el.leadBike.addEventListener("click", function () { setMode("box"); });
-  el.leadShip.addEventListener("click", function () { setMode("ship"); });
-  // Changing a top question restarts the step sequence.
-  s.contents.addEventListener("change", function () { step = 0; syncBox(); render(); });
-  s.style.addEventListener("change", function () { syncBox(); render(); });
-  ["boxSize", "packer"].forEach(function (k) {
-    s[k].addEventListener("change", render);
-  });
-  document.querySelectorAll(".step-next").forEach(function (btn) {
-    btn.addEventListener("click", advance);
-  });
+  function refresh() {
+    ebikeToggle();
+    var open = el.contents.value !== "";
+    el.q2Wrap.hidden = !open;   // Step 2 (and the columns) appear once a type is chosen
+    el.details.hidden = !open;
+    if (open) { renderBox(); }
+  }
 
-  render(); // start closed: nothing shows until the top two questions are answered
+  el.contents.addEventListener("change", function () { syncBox(); refresh(); });
+  el.style.addEventListener("change", function () { syncBox(); renderBox(); });
+  el.boxSize.addEventListener("change", renderBox);
+  el.leadBike.addEventListener("click", function () { setPick("box"); });
+  el.leadShip.addEventListener("click", function () { setPick("ship"); });
+  var heads = document.querySelectorAll(".path-head");
+  for (var i = 0; i < heads.length; i++) {
+    heads[i].addEventListener("click", function () { setPick(this.getAttribute("data-pick")); });
+  }
+
+  refresh(); // columns stay hidden until a type is chosen
 })();
 </script>
 

@@ -1,4 +1,4 @@
-<title>Pack &amp; Ship Your Bike</title>
+<title>Pack &amp; Ship Your Bike Calculator</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <style>
   /* Layout: a lead toggle up top, then two stacked dropdown tables (contents + shipment) that react to each other, and a live summary rail. Options mirror bikeflights.com/ship. */
@@ -314,23 +314,31 @@
   .muted-note { color: var(--muted); font-size: .8rem; margin: 4px 0 0; text-align: center; }
   .muted-note a { color: var(--accent); }
 
-  /* FAQ — always visible, for readers and for search / AI citation */
+  /* FAQ — collapsed behind its heading; in the DOM for search / AI citation */
   .faq { margin-top: 34px; }
-  .faq-h { font-family: var(--display); color: var(--ink); font-size: 1.15rem; margin: 0 0 12px; }
-  .faq details {
+  .faq-h { font-family: var(--display); color: var(--ink); font-size: 1.15rem; margin: 0; }
+  .faq-wrap > summary.faq-h {
+    cursor: pointer; list-style: none;
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  }
+  .faq-wrap > summary.faq-h::-webkit-details-marker { display: none; }
+  .faq-wrap > summary.faq-h::after { content: "+"; color: var(--accent); font-weight: 700; font-size: 1.1rem; }
+  .faq-wrap[open] > summary.faq-h::after { content: "–"; }
+  .faq-list { margin-top: 12px; }
+  .faq-list details {
     background: var(--surface); border: 1px solid var(--line);
     border-radius: 10px; margin-bottom: 8px;
   }
-  .faq summary {
+  .faq-list summary {
     cursor: pointer; padding: 13px 15px; font-weight: 600; font-size: .95rem;
     list-style: none; display: flex; justify-content: space-between; gap: 12px;
   }
-  .faq summary::-webkit-details-marker { display: none; }
-  .faq summary::after { content: "+"; color: var(--accent); font-weight: 700; }
-  .faq details[open] summary::after { content: "–"; }
-  .faq .faq-a { padding: 0 15px 14px; font-size: .9rem; color: var(--muted); line-height: 1.55; }
-  .faq .faq-a b { color: var(--fg); font-weight: 600; }
-  .faq .faq-a a { color: var(--accent); font-weight: 600; }
+  .faq-list summary::-webkit-details-marker { display: none; }
+  .faq-list summary::after { content: "+"; color: var(--accent); font-weight: 700; }
+  .faq-list details[open] summary::after { content: "–"; }
+  .faq-list .faq-a { padding: 0 15px 14px; font-size: .9rem; color: var(--muted); line-height: 1.55; }
+  .faq-list .faq-a b { color: var(--fg); font-weight: 600; }
+  .faq-list .faq-a a { color: var(--accent); font-weight: 600; }
 
   /* Step-by-step reveal */
   .card.locked > table, .card.locked > .ready-body, .card .card-foot { display: none; }
@@ -352,7 +360,7 @@
 <div class="wrap">
   <header class="page">
     <div class="kicker">Bike shipping &amp; box guide</div>
-    <h1>Pack &amp; Ship Your Bike</h1>
+    <h1>Pack &amp; Ship Your Bike Calculator</h1>
     <p class="sub">A quick questionnaire that gets you ready to ship — the right box, how to pack it, and everything the form will ask. Jump off to buy a box or book shipping whenever you're ready.</p>
   </header>
 
@@ -516,7 +524,9 @@
 
   <!-- Always-visible, crawlable answers for search and AI citation -->
   <section class="faq" aria-label="Common bike shipping questions">
-    <h2 class="faq-h">Common bike-shipping questions</h2>
+    <details class="faq-wrap">
+    <summary class="faq-h">Common bike-shipping questions</summary>
+    <div class="faq-list">
 
     <details>
       <summary>What size bike box do I need?</summary>
@@ -551,6 +561,9 @@
     <details>
       <summary>What can't I ship?</summary>
       <div class="faq-a">Loose or standalone batteries and CO₂ cartridges can't ship, and you can't ship to a PO box — use a street address. An e-bike battery must stay installed in the bike. See the <a href="https://faq.bikeflights.com" target="_blank" rel="noopener">BikeFlights FAQ</a>.</div>
+    </details>
+
+    </div>
     </details>
   </section>
 </div>

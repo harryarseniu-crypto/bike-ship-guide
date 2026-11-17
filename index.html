@@ -159,6 +159,8 @@
   .seg small { color: var(--muted); font-size: .82rem; }
   .lead-q.second { margin-top: 18px; }
   .lead-field { margin-top: 2px; }
+  .lead-hint { font-size: .8rem; color: var(--muted); margin: 8px 0 0; }
+  .lead-hint b { color: var(--ink); font-weight: 600; }
 
   /* Tables */
   .tables { display: grid; gap: 16px; margin-top: 18px; }
@@ -390,13 +392,13 @@
     <div class="lead-q"><span class="step">1</span> What are you shipping?</div>
     <div class="field sel lead-field">
       <select id="contents">
-        <option value="" selected disabled>Choose a type…</option>
-        <option value="standard">Standard bike (complete)</option>
+        <option value="standard" selected>Standard bike (complete)</option>
         <option value="ebike">E-bike (battery installed)</option>
         <option value="frame">Frame only</option>
         <option value="parts">Parts / components</option>
       </select>
     </div>
+    <p class="lead-hint">Set to <b>Standard bike</b> — change it above if you're shipping an e-bike, a frame, or parts.</p>
 
     <div id="q2Wrap" hidden>
       <div class="lead-q second"><span class="step">2</span> Do you need a box, or just shipping?</div>

@@ -729,6 +729,11 @@
     el.colBox.classList.toggle("greyed", p === "ship");
     el.colShip.classList.toggle("active", p === "ship");
     el.colShip.classList.toggle("greyed", p === "box");
+    // Collapse the greyed column so it shows just its step titles.
+    var other = p === "box" ? el.colShip : el.colBox;
+    var os = other.querySelectorAll(".pstep");
+    for (var j = 0; j < os.length; j++) { os[j].open = false; }
+    // Open the first step of the active column.
     var col = p === "box" ? el.colBox : (p === "ship" ? el.colShip : null);
     if (col) { var first = col.querySelector(".pstep"); if (first) { first.open = true; } }
   }
